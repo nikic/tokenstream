@@ -1,0 +1,6 @@
+Purpose of this project:
+Create multipurpose Token_Stream and Token class, so they may be used
+with only slight modifications for any project dealing with the Tokenizer.
+
+To be more concrete: I am annoyed of always modifying the Prephp_Token_Stream
+class to fit a particular purpose
