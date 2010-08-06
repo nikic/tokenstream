@@ -47,7 +47,7 @@
 	define('T_TILDE',        1027);
 	define('T_BACKTICK',     1028);
 	
-	class Prephp_Token
+	class Token
 	{
 		protected $tokId;   // Token Identifier. Something like T_VARIABLE
 		protected $content; // Token Content. Something like "$var"

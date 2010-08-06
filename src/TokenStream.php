@@ -2,7 +2,7 @@
 	require_once 'Exception.php';
 	require_once 'Token.php';
 	
-	class Prephp_Token_Stream implements ArrayAccess, Countable, SeekableIterator
+	class Token_Stream implements ArrayAccess, Countable, SeekableIterator
 	{
 		protected $tokens = array();
 		
@@ -47,14 +47,14 @@
 			$line = 1;
 			foreach ($tokens as $token) {
 				if (is_string($token)) {
-					$this->tokens[] = new Prephp_Token(
+					$this->tokens[] = new Token(
 						self::$customTokens[$token],
 						$token,
 						$line
 					);
 				}
 				else {
-					$this->tokens[]= new Prephp_Token(
+					$this->tokens[]= new Token(
 						$token[0],
 						$token[1],
 						$line
@@ -84,7 +84,7 @@
 					
 					// not the missing char
 					if ($source[$i] != $chars[0]) {
-						throw new Prephp_Exception('Token Stream construction failed. \''.$source[$i].'\' found, \''.$chars[0].'\' expected');
+						throw new Token_Exception('Token Stream construction failed. \''.$source[$i].'\' found, \''.$chars[0].'\' expected');
 					}
 					
 					$this->insertToken($n, array_shift($chars));
@@ -177,7 +177,7 @@
 							T_CLOSE_CURLY,
 					))
 				) {
-					throw new Prephp_Exception('TokenStream/complementaryBracket: Unexpected '.token_name($this->tokens[$i]->getTokenId()).' at '.$i.', expected opening bracket!');
+					throw new Token_Exception('TokenStream/complementaryBracket: Unexpected '.token_name($this->tokens[$i]->getTokenId()).' at '.$i.', expected opening bracket!');
 				}
 				
 				$complements = array(
@@ -194,7 +194,7 @@
 							T_OPEN_CURLY,
 					))
 				) {
-					throw new Prephp_Exception('TokenStream/complementaryBracket: Unexpected '.token_name($this->tokens[$i]->getTokenId()).' at '.$i.', expected opening bracket!');
+					throw new Token_Exception('TokenStream/complementaryBracket: Unexpected '.token_name($this->tokens[$i]->getTokenId()).' at '.$i.', expected opening bracket!');
 				}
 				
 				$complements = array(
@@ -212,7 +212,7 @@
 				$i = $this->findToken($i, array($type, $compl), $reverse);
 				
 				if ($i === false) {
-					throw new Prephp_Exception('TokenStream/complementaryBracket: Opening and closing brackets not matching.');
+					throw new Token_Exception('TokenStream/complementaryBracket: Opening and closing brackets not matching.');
 				}
 				
 				if ($this->tokens[$i]->is($type)) { // opening
@@ -252,10 +252,10 @@
 		// TokenStream operations
 		//
 		
-		// returns a Prephp_Token_Stream containing elements $from to $to
+		// returns a Token_Stream containing elements $from to $to
 		// and *removes* it from the original stream
 		public function extractStream($from, $to) {
-			$tokenStream = new Prephp_Token_Stream;
+			$tokenStream = new Token_Stream;
 			$tokenStream->appendStream(
 				array_splice($this->tokens, $from, $to - $from + 1, array())
 			);
@@ -280,19 +280,19 @@
 		// appends stream
 		public function appendStream($tokenStream) {			
 			foreach ($tokenStream as $token) {
-				// Prephp_Token: append
-				if ($token instanceof Prephp_Token) {
+				// Token: append
+				if ($token instanceof Token) {
 					$this->tokens[] = $token;
 				}
-				// One char Token: append Prephp_Token resulting from it
+				// One char token: append Token resulting from it
 				elseif (is_string($token)) {
-					$this->tokens[] = new Prephp_Token(
+					$this->tokens[] = new Token(
 						self::$customTokens[$token],
 						$token
 					);
 				}
-				// array or Stream: recursively call appendStream
-				elseif (is_array($token) || $token instanceof Prephp_Token_Stream) {
+				// array or Token_Stream: recursively call appendStream
+				elseif (is_array($token) || $token instanceof Token_Stream) {
 					$this->appendStream($token);
 				}
 				// drop anything else
@@ -380,8 +380,8 @@
 		
 		public function offsetSet($offset, $value)
 		{
-			if(!($value instanceof Prephp_Token)) {
-				throw new InvalidArgumentException('Cannot set offset '.$offset.': Expecting Prephp_Token');
+			if(!($value instanceof Token)) {
+				throw new InvalidArgumentException('Cannot set offset '.$offset.': Expecting Token');
 			}
 			
 			$this->tokens[$offset] = $value;
