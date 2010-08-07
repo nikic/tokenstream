@@ -1,3 +1,4 @@
 <?php
-	class Token_Exception extends Exception {}
-?>
+    class TokenException extends Exception
+    {
+    }
