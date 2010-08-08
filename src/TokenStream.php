@@ -238,16 +238,22 @@
         /**
         * append token or stream to stream
         *
-        * This function is very flexible about the stream it takes.
-        * The stream may consist of sub streams, which are appended recursively.
-        * A "stream" here isn't a TokenStream, but any Traversable object or array.
-        * Furthermore the stream may be a single element (it is than converted into an array).
-        * The elements of the stream may be either Tokens or one-char token strings.
-        * Any other elements will simply be dropped, *without* error message.
+        * This function may either be passed a TokenStream, an array of token-like
+        * elements or a single token-like element.
+        * The array will be appended recursively (thus it can have sub-arrays.)
+        * A token-like element is either a Token or a single character mapable to
+        * a token. All other elements are dropped, *without* error message.
         *
         * @param mixed $tokenStream
         */
         public function append($tokenStream) {			
+            // fast append if is TokenStream
+            if ($tokenStream instanceof TokenStream) {
+                foreach ($tokenStream as $token) {
+                    $this->tokens[] = $token;
+                }
+            }
+            
             if (!is_array($tokenStream)) {
                 $tokenStream = array($tokenStream);
             }
@@ -267,7 +273,7 @@
                 elseif ($token instanceof TokenStream || is_array($token)) {
                     $this->append($token);
                 }
-                // drop anything else (NO! error message)
+                // drop anything else *without* error message
             }
         }
         
