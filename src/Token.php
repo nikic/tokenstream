@@ -100,8 +100,7 @@
         * @return string
         */
         public function __toString() {
-            // ensure it is a string by casting to string
-            return (string) $this->content;
+            return $this->content;
         }
         
         /**

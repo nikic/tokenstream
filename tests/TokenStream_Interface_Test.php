@@ -32,8 +32,9 @@
         );
         test($tokenStream[5]->content, '?>', 'append');
         test(isset($tokenStream[6]), false, 'isset');
-        unset($tokenStream[5]); // pass if no error
+        unset($tokenStream[0]); // pass if no error
+        test(isset($tokenStream[0]), true, 'unset moves tokens down');
         testException(function() use($tokenStream) { $tokenStream[5]; }, 'OutOfBoundsException', 'getting non existing offset');
-        testException(function() use($tokenStream) { $tokenStream[] = 0; }, 'InvalidArgumentException', 'setting to non-token');
         testException(function() use($tokenStream) { unset($tokenStream[5]); }, 'OutOfBoundsException', 'unsetting non existing offset');
+        testException(function() use($tokenStream) { $tokenStream[] = 0; }, 'InvalidArgumentException', 'setting to non-token');
     });

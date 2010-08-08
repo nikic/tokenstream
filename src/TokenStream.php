@@ -43,10 +43,15 @@
         * @param string $source code (including <?php)
         */
         public function __construct($source = '') {
+            // fast abort on empty source
+            if ($source == '') {
+                return;
+            }
+            
             // capture errors
             ob_start();
+            
             $tokens = token_get_all($source);
-            $errors = ob_get_clean();
             
             $line = 1;
             foreach ($tokens as $token) {
@@ -71,7 +76,7 @@
             // If there are errors, e.g.
             // <b>Warning</b>:  Unexpected character in input:  '\' (ASCII=92) state=1 in [...]
             // iterate through all tokens and compare to source
-            if ($errors != '') {
+            if (ob_get_clean() != '') {
                 $i = 0; // string offset in source
                 $count = count($this->tokens);
                 for ($n = 0; $n < $count; ++$n) {
@@ -468,6 +473,7 @@
                 throw new OutOfBoundsException('offset does not exist');
             }
             
-            unset($this->tokens[$offset]);
+            // need splice here to move other tokens down
+            array_splice($this->tokens, $offset, 1);
         }
     }
