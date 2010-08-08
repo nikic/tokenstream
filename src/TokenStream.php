@@ -470,7 +470,7 @@
         }
         
         /**
-        * unset offset in token array
+        * unset offset in token array (interface: ArrayAccess)
         * @param int $offset
         */
         public function offsetUnset($offset)
