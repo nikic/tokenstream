@@ -247,16 +247,10 @@
         * @param mixed $tokenStream
         */
         public function append($tokenStream) {			
-            // fast append if is TokenStream
-            if ($tokenStream instanceof TokenStream) {
-                foreach ($tokenStream as $token) {
-                    $this->tokens[] = $token;
-                }
-            }
-            
             if (!is_array($tokenStream)) {
                 $tokenStream = array($tokenStream);
             }
+            
             foreach ($tokenStream as $token) {
                 // instanceof Token: append
                 if ($token instanceof Token) {
@@ -269,11 +263,17 @@
                         $token
                     );
                 }
-                // TokenStream or token array: recursively call appendStream
-                elseif ($token instanceof TokenStream || is_array($token)) {
+                // token stream: append each
+                elseif ($token instanceof TokenStream) {
+                    foreach ($token as $t) {
+                        $this->tokens[] = $t;
+                    }
+                }
+                // token array: recursively append
+                elseif (is_array($token)) {
                     $this->append($token);
                 }
-                // drop anything else *without* error message
+                // else: drop *without* error message
             }
         }
         
