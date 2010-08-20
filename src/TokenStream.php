@@ -148,12 +148,8 @@
             return false;
         }
         
-        // do we need this? Compare:
-        // skipWhitespace($i);
-        // skip($i, T_WHITESPACE);
-        // + 4 characters
         /**
-        * skips whitespace (shortcut for skip(, T_WHITESPACE)
+        * skips whitespace (shortcut for skip($i, T_WHITESPACE)
         * @param int $i
         * @param bool $reverse if true skips backwards
         * @return int|false returns false if no token found
