@@ -84,7 +84,7 @@
                     if (substr($source, $i, $length) == $this->tokens[$n]->content) {
                         $i += $length;
                     } else { // token was missing
-                        $this->insertToken($n, $source[$i]);
+                        $this->insert($n, $source[$i]);
                         ++$i;
                         ++$count;
                     }
