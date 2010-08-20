@@ -381,19 +381,11 @@
                 if (!$convertWhitespace) {
                     echo htmlspecialchars($token->content);
                 } else {
-                    foreach (str_split($token->content) as $char) {
-                        if ($char == "\n") {
-                            echo '<span style="color:grey">\n</span>';
-                        } elseif ($char == "\r") {
-                            echo '<span style="color:grey">\r</span>';
-                        } elseif ($char == "\t") {
-                            echo '<span style="color:grey">\t</span>';
-                        } elseif ($char == '<') {
-                            echo '&lt;';
-                        } else {
-                            echo $char;
-                        }
-                    }
+                    echo str_replace(array("\n", "\r", "\t"), array(
+                        '<span style="color:grey">\n</span>',
+                        '<span style="color:grey">\r</span>',
+                        '<span style="color:grey">\t</span>',
+                    ), htmlspecialchars($token->content));
                 }
                 echo '</span>"';
                 if (!in_array($token->type, self::$customTokens)) {

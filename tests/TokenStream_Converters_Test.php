@@ -11,4 +11,4 @@
     echo '<p>The debugDump method is hard to test. But try this:
 If you like the following output, everything\'s okay. If not, test failed ;)</p>';
     $tokenStream = new TokenStream(file_get_contents(__FILE__));
-    $tokenStream->debugDump(true, true, true);
+    $tokenStream->debugDump(true, true, false);
