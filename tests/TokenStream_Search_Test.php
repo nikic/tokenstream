@@ -27,9 +27,11 @@
         test($tokenStream->skipWhitespace(0), 2, 'skip whitespace');
     });
     
-    //                              0     12 34 5678901 234 56
-    $tokenStream = new TokenStream('<?php (hi,hi,(),((hi),hi))');
+    //                              0     12 34 5678901 234 56 789
+    $tokenStream = new TokenStream('<?php (hi,hi,(),((hi),hi)) (()');
     group('complementaryBracket', function() use($tokenStream) {
         test($tokenStream->complementaryBracket(1), 16, 'find forward');
         test($tokenStream->complementaryBracket(15), 9, 'find backwards');
+        testException(function() use($tokenStream) { $tokenStream->complementaryBracket(17); }, 'TokenException', 'brackets not matching');
+        testException(function() use($tokenStream) { $tokenStream->complementaryBracket(2); }, 'TokenException', 'not a bracket');
     });

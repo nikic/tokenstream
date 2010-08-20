@@ -207,6 +207,8 @@
                 $reverse = true; // backwards search
             } elseif ($this->tokens[$i]->is(T_OPEN_ROUND, T_OPEN_SQUARE, T_OPEN_CURLY)) {
                 $reverse = false; // forwards search
+            } else {
+                throw new TokenException('Not a bracket');
             }
                 
             $type = $this->tokens[$i]->type;
