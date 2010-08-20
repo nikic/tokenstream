@@ -299,7 +299,9 @@
             $this->append($tokenStream);
             
             // append $after
-            $this->tokens = array_merge($this->tokens, $after);
+            foreach ($after as $token) {
+                $this->tokens[] = $token;
+            }
         }
         
         /**
