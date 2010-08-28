@@ -16,6 +16,14 @@
         test($tokenStream->find($max, T_EXIT, true), 2, 'find token backwards');
         test($tokenStream->find(0, T_OPEN_TAG, true), false, 'find from first index backwards');
         test($tokenStream->findEOS($max, true), 6, 'find eos semicolon');
+        
+        //                         0     123       4567890
+        $hacker = new TokenStream('<?php A(function(){;});');
+        test($hacker->findEOS(2), 10, 'find EOS skipping lambda');
+        test($hacker->findEOS(9, true), 0, 'find EOS skipping lambda backwards');
+        //                         0     123
+        $hacker = new TokenStream('<?php {} ');
+        test($hacker->findEOS(3, true), 2, 'find closing bracket as EOS backwards');
     });
     
     group('skip', function() use($tokenStream, $max) {

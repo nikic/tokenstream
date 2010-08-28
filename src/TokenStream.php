@@ -4,38 +4,6 @@
     
     class TokenStream implements Countable, ArrayAccess, IteratorAggregate
     {
-        protected static $customTokens = array(
-            '(' => T_OPEN_ROUND,
-            ')' => T_CLOSE_ROUND,
-            '[' => T_OPEN_SQUARE,
-            ']' => T_CLOSE_SQUARE,
-            '{' => T_OPEN_CURLY,
-            '}' => T_CLOSE_CURLY,
-            ';' => T_SEMICOLON,
-            '.' => T_DOT,
-            ',' => T_COMMA,
-            '=' => T_EQUAL,
-            '<' => T_LT,
-            '>' => T_GT,
-            '+' => T_PLUS,
-            '-' => T_MINUS,
-            '*' => T_STAR,
-            '/' => T_SLASH,
-            '?' => T_QUESTION,
-            '!' => T_EXCLAMATION,
-            ':' => T_COLON,
-            '"' => T_DOUBLE_QUOTES,
-            '@' => T_AT,
-            '&' => T_AMP,
-            '%' => T_PERCENT,
-            '|' => T_PIPE,
-            '$' => T_DOLLAR,
-            '^' => T_CARET,
-            '~' => T_TILDE,
-            '`' => T_BACKTICK,
-            '\\' => T_NS_SEPARATOR,
-        );
-        
         protected $tokens = array();
         
         /**
@@ -56,11 +24,7 @@
             $line = 1;
             foreach ($tokens as $token) {
                 if (is_string($token)) {
-                    $this->tokens[] = new Token(
-                        self::$customTokens[$token],
-                        $token,
-                        $line
-                    );
+                    $this->tokens[] = Token::newCharToken($token, $line);
                 }
                 else {
                     $this->tokens[] = new Token(
@@ -111,7 +75,7 @@
                     }
                 }
             } else { // find next
-                $numof = $this->count();
+                $numof = count($this->tokens);
                 while (++$i < $numof) {
                     if ($this->tokens[$i]->is($tokens)) {
                         return $i;
@@ -137,7 +101,7 @@
                     }
                 }
             } else { // find next
-                $numof = $this->count();
+                $numof = count($this->tokens);
                 while (++$i < $numof) {
                     if (!$this->tokens[$i]->is($tokens)) {
                         return $i;
@@ -166,25 +130,35 @@
         */
         public function findEOS($i, $reverse = false) {
             if ($reverse) { // find previous
-                return $this->find(
-                    $i,
-                    array(
-                        T_SEMICOLON,
-                        T_CLOSE_CURLY,
-                        T_OPEN_CURLY,
-                        T_OPEN_TAG,
-                    ),
-                    true
-                );
+                while ($i--) {
+                    if ($this->tokens[$i]->is(T_SEMICOLON, T_OPEN_TAG)
+                        || ($this->tokens[$i]->is(T_CLOSE_CURLY)
+                            && (!($next = $this->skipWhitespace($i))
+                                || !$this->tokens[$next]->is(T_COMMA, T_CLOSE_ROUND, T_SEMICOLON)
+                                )
+                        )
+                        || ($this->tokens[$i]->is(T_OPEN_CURLY)
+                            && !$this->tokens[$this->complementaryBracket($i)]->is(T_COMMA, T_CLOSE_ROUND, T_SEMICOLON)
+                        )
+                    ) {
+                        return $i;
+                    } elseif ($this->tokens[$i]->is(T_CLOSE_ROUND, T_CLOSE_SQUARE, T_CLOSE_CURLY)) {
+                        $i = $this->complementaryBracket($i);
+                    }
+                }
             } else { // find next
-                return $this->find(
-                    $i,
-                    array(
-                        T_SEMICOLON,
-                        T_CLOSE_TAG,
-                    )
-                );
+                $numof = count($this->tokens);
+                
+                while (++$i < $numof) {
+                    if ($this->tokens[$i]->is(T_SEMICOLON, T_CLOSE_TAG)) {
+                        return $i;
+                    } elseif ($this->tokens[$i]->is(T_OPEN_ROUND, T_OPEN_SQUARE, T_OPEN_CURLY)) {
+                        $i = $this->complementaryBracket($i);
+                    }
+                }
             }
+            
+            return false;
         }
         
         /**
@@ -256,10 +230,7 @@
                 }
                 // one char token: append Token resulting from it
                 elseif (is_string($token)) {
-                    $this->tokens[] = new Token(
-                        self::$customTokens[$token],
-                        $token
-                    );
+                    $this->tokens[] = Token::newCharToken($token);
                 }
                 // token stream: append each
                 elseif ($token instanceof TokenStream) {
@@ -386,7 +357,7 @@
                     ), htmlspecialchars($token->content));
                 }
                 echo '</span>"';
-                if (!in_array($token->type, self::$customTokens)) {
+                if (token_name($token->type) != 'UNKNOWN') {
                     echo ' ', token_name($token->type);
                 }
                 if ($token->line != 0) {

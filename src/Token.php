@@ -51,6 +51,51 @@
     
     class Token
     {
+        protected static $charTokens = array(
+            '(' => T_OPEN_ROUND,
+            ')' => T_CLOSE_ROUND,
+            '[' => T_OPEN_SQUARE,
+            ']' => T_CLOSE_SQUARE,
+            '{' => T_OPEN_CURLY,
+            '}' => T_CLOSE_CURLY,
+            ';' => T_SEMICOLON,
+            '.' => T_DOT,
+            ',' => T_COMMA,
+            '=' => T_EQUAL,
+            '<' => T_LT,
+            '>' => T_GT,
+            '+' => T_PLUS,
+            '-' => T_MINUS,
+            '*' => T_STAR,
+            '/' => T_SLASH,
+            '?' => T_QUESTION,
+            '!' => T_EXCLAMATION,
+            ':' => T_COLON,
+            '"' => T_DOUBLE_QUOTES,
+            '@' => T_AT,
+            '&' => T_AMP,
+            '%' => T_PERCENT,
+            '|' => T_PIPE,
+            '$' => T_DOLLAR,
+            '^' => T_CARET,
+            '~' => T_TILDE,
+            '`' => T_BACKTICK,
+            '\\' => T_NS_SEPARATOR,
+        );
+        
+        /**
+        * create new single char token
+        * @param string $char
+        * @param int $line
+        */
+        public static function newCharToken($char, $line = 0) {
+            return new self(
+                self::$charTokens[$char],
+                $char,
+                $line
+            );
+        }
+        
         // every token has an internal identifier to make it unique
         // even if there were another token there all the other properties were identical.
         protected static $currentId = 0;
@@ -70,13 +115,13 @@
         public function __construct($type, $content, $line = 0) {
             $this->id = ++self::$currentId;
             
-            $this->type = $type;
-            $this->content = $content;
-            $this->line = $line;
+            $this->type    = (int)    $type;
+            $this->content = (string) $content;
+            $this->line    = (int)    $line;
         }
         
         /**
-        * clone token, incrementing id
+        * clone token incrementing id
         */
         public function __clone() {
             $this->id = ++self::$currentId;
@@ -84,15 +129,42 @@
         
         /**
         * get a property
-        * @param string $name name of the property (id, type, content, line allowed)
+        * @param string $name name of the property (id, type, content, line and name allowed)
         * @return mixed
+        * @throws InvalidArgumentException on not allowed property
         */
         public function __get($name) {
-            if (!isset($this->$name)) {
-                throw new InvalidArgumentException('Property ' . $name . ' does not exist');
+            if ($name == 'name') {
+                if (token_name($this->type) == 'UNKNOWN') {
+                    return '\'' . $this->content . '\'';
+                } else {
+                    return token_name($this->type);
+                }
+            } elseif (isset($this->$name)) {
+                return $this->$name;
             }
             
-            return $this->$name;
+            throw new InvalidArgumentException('Property ' . $name . ' does not exist');
+        }
+        
+        /**
+        * set a property
+        * @param string $name name of property (type, content, line allowed)
+        * @param string|int $value
+        * @throws InvalidArgumentException on not allowed property
+        */
+        public function __set($name, $value) {
+            if ($name == 'type') {
+                $this->type = (int) $value;
+            } elseif ($name == 'content') {
+                $this->content = (string) $value;
+            } elseif ($name == 'line') {
+                $this->line = (int) $value;
+            } elseif ($name == 'id' || $name == 'name') {
+                throw new InvalidArgumentException('The id and the name may not be changed');
+            } else {
+                throw new InvalidArgumentException('Property ' . $name . ' does not exist');
+            }
         }
         
         /**
