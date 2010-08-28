@@ -37,7 +37,7 @@
                 }
             }
             
-            // If there are errors, e.g.
+            // if there are errors, e.g.
             // <b>Warning</b>:  Unexpected character in input:  '\' (ASCII=92) state=1 in [...]
             // iterate through all tokens and compare to source
             if (ob_get_clean() != '') {
@@ -52,6 +52,21 @@
                         ++$i;
                         ++$count;
                     }
+                }
+            }
+            
+            // replace T_STRINGs with new PHP 5.3 tokens
+            $replace = array(
+                'goto'          => T_GOTO,
+                'use'           => T_USE,
+                'namespace'     => T_NAMESPACE,
+                '__NAMESPACE__' => T_NS_C,
+                '__DIR__'       => T_DIR,
+            );
+            
+            for ($numof = count($this->tokens), $i = 0; $i < $numof; ++$i) {
+                if ($this->tokens[$i]->type == T_STRING && isset($replace[$this->tokens[$i]->content])) {
+                    $this->tokens[$i]->type = $this->tokens[$i]->content;
                 }
             }
         }
@@ -133,11 +148,11 @@
                 while ($i--) {
                     if ($this->tokens[$i]->is(T_SEMICOLON, T_OPEN_TAG)
                         || ($this->tokens[$i]->is(T_CLOSE_CURLY)
-                            && (!($next = $this->skipWhitespace($i))
+                            && (!($next = $this->skipWhitespace($i)) // check that it's no lambda
                                 || !$this->tokens[$next]->is(T_COMMA, T_CLOSE_ROUND, T_SEMICOLON)
                                 )
                         )
-                        || ($this->tokens[$i]->is(T_OPEN_CURLY)
+                        || ($this->tokens[$i]->is(T_OPEN_CURLY) // check that it's no lambda
                             && !$this->tokens[$this->complementaryBracket($i)]->is(T_COMMA, T_CLOSE_ROUND, T_SEMICOLON)
                         )
                     ) {
