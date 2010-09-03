@@ -2,7 +2,7 @@
     require_once 'TokenException.php';
     require_once 'Token.php';
     
-    class TokenStream implements Countable, ArrayAccess, IteratorAggregate
+    class TokenStream implements Countable, ArrayAccess, Iterator
     {
         protected $tokens = array();
         
@@ -386,7 +386,7 @@
         /*
             Interfaces
         */
-        
+            
         /**
         * counts number of tokens (interface: Countable)
         * @return int
@@ -395,12 +395,27 @@
             return count($this->tokens);
         }
         
-        /**
-        * returns iterator (interface: IteratorAggregate)
-        * @return ArrayIterator
-        */
-        public function getIterator() {
-            return new ArrayIterator($this->tokens);
+        // interface: Iterator
+        protected $position = 0;
+        
+        function rewind() {
+            $this->position = 0;
+        }
+
+        function current() {
+            return $this->tokens[$this->position];
+        }
+
+        function key() {
+            return $this->position;
+        }
+
+        function next() {
+            ++$this->position;
+        }
+
+        function valid() {
+            return isset($this->tokens[$this->position]);
         }
         
         /**
