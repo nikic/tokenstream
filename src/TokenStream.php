@@ -232,33 +232,40 @@
         * a token. All other elements are dropped, *without* error message.
         *
         * @param mixed $tokenStream
+        * @return int number of appended tokens
         */
         public function append($tokenStream) {			
             if (!is_array($tokenStream)) {
                 $tokenStream = array($tokenStream);
             }
             
+            $count = 0; // number of appended tokens
             foreach ($tokenStream as $token) {
                 // instanceof Token: append
                 if ($token instanceof Token) {
                     $this->tokens[] = $token;
+                    ++$count;
                 }
                 // one char token: append Token resulting from it
                 elseif (is_string($token)) {
                     $this->tokens[] = Token::newCharToken($token);
+                    ++$count;
                 }
                 // token stream: append each
                 elseif ($token instanceof TokenStream) {
                     foreach ($token as $t) {
                         $this->tokens[] = $t;
+                        ++$count;
                     }
                 }
                 // token array: recursively append
                 elseif (is_array($token)) {
-                    $this->append($token);
+                    $count += $this->append($token);
                 }
                 // else: drop *without* error message
             }
+            
+            return $count;
         }
         
         /**
@@ -280,7 +287,12 @@
             $after = array_splice($this->tokens, $i);
             
             // "magic" append
-            $this->append($tokenStream);
+            $count = $this->append($tokenStream);
+            
+            // fix iterator position
+            if ($i < $this->position) {
+                $this->position += $count;
+            }
             
             // append $after
             foreach ($after as $token) {
@@ -294,10 +306,32 @@
         * @param int $to
         */
         public function extract($i, $to = null) {
+            // fix iterator position
+            if ($i < $this->position) {
+                $this->position -= $to === null ? 1 : ($to < $this->position ? $to - $i : $this->position - $i);
+            }
+            
             if ($to === null) {
+                // fix iterator position
+                if ($i < $this->position && 0 > --$this->position) {
+                    $this->position = 0;
+                }
+                
                 $tokens = array_splice($this->tokens, $i, 1, array());
                 return $tokens[0];
             } else {
+                if ($i < $this->position) {
+                    if ($to <= $this->position) {
+                        $this->position = $i;
+                    } else {
+                        $this->position -= $to - $i;
+                    }
+                    
+                    if (--$this->position < 0) {
+                        $this->position = 0;
+                    }
+                }
+                
                 $tokenStream = new TokenStream;
                 $tokenStream->append(
                     array_splice($this->tokens, $i, $to - $i + 1, array())
@@ -415,6 +449,14 @@
             return isset($this->tokens[$this->position]);
         }
         
+        public function seek($offset) {
+            if (!isset($this->tokens[$offset])) {
+                throw new OutOfBoundsException('seeking to out of bounds offset: ' . $offset);
+            }
+            
+            $this->position = $offset;
+        }
+        
         // interface: ArrayAccess
         public function offsetExists($offset)
         {
@@ -452,5 +494,10 @@
             
             // need splice here to move other tokens down
             array_splice($this->tokens, $offset, 1);
+            
+            // fix iterator position
+            if ($offset < $this->position) {
+                --$this->position;
+            }
         }
     }

@@ -8,12 +8,48 @@
         test(count($tokenStream), 5, 'count($tokenStream)');
     });
     
-    group('interface IteratorAggregate', function() use($tokenStream) {
+    group('interface Iterator', function() use($tokenStream) {
         $source = '';
         foreach ($tokenStream as $token) {
             $source .= $token;
         }
         test($source, "<?php\ndie();", 'source restauration');
+        
+        $tokenStream->seek(2);
+        test($tokenStream->current()->type, T_OPEN_ROUND, 'seek');
+        testException(function() use($tokenStream) { $tokenStream->seek(5); }, 'OutOfBoundsException', 'seek out of bounds');
+        
+        // test manipulation while iterating
+        
+        // unset()
+        $tokens = clone $tokenStream;
+        $tokens->seek(2);
+        unset($tokens[1]);
+        test($tokens->key(), 1, 'unset before position');
+        
+        // extract() single
+        $tokens = clone $tokenStream;
+        $tokens->seek(2);
+        $tokens->extract(1);
+        test($tokens->key(), 1, 'extract single before position');
+        
+        // extract() multiple
+        $tokens = clone $tokenStream;
+        $tokens->seek(2);
+        $tokens->extract(0, 1);
+        test($tokens->key(), 0, 'extract multiple before position');
+        $tokens = clone $tokenStream;
+        $tokens->seek(2);
+        $tokens->extract(1, 3);
+        test($tokens->key(), 1, 'extract multiple over position');
+        
+        // insert()
+        $tokens = clone $tokenStream;
+        $tokens->seek(2);
+        $tokens->insert(1, array('(', ')'));
+        test($tokens->key(), 4, 'insert before position');
+        $tokens->insert(1, array('(', ')', array('(', ')')));
+        test($tokens->key(), 8, 'insert recursive before position');
     });
     
     group('interface ArrayAccess', function() use($tokenStream) {
