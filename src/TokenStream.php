@@ -387,10 +387,7 @@
             Interfaces
         */
             
-        /**
-        * counts number of tokens (interface: Countable)
-        * @return int
-        */
+        // interface: Countable
         public function count() {
             return count($this->tokens);
         }
@@ -418,22 +415,12 @@
             return isset($this->tokens[$this->position]);
         }
         
-        /**
-        * checks if offset exists in token array (interface: ArrayAccess)
-        * @param int $offset
-        * @return bool
-        */
+        // interface: ArrayAccess
         public function offsetExists($offset)
         {
             return isset($this->tokens[$offset]);
         }
         
-        /**
-        * get offset from token array (interface: ArrayAccess)
-        * @param int $offset
-        * @return Token
-        * @throws OutOfBoundException if offset doesn't exist
-        */
         public function offsetGet($offset)
         {
             if (!isset($this->tokens[$offset])) {
@@ -443,11 +430,6 @@
             return $this->tokens[$offset];
         }
         
-        /**
-        * set offset in token array (interface: ArrayAccess)
-        * @param int $offset
-        * @param Token $value
-        */
         public function offsetSet($offset, $value)
         {
             if (!$value instanceof Token) {
@@ -462,10 +444,6 @@
             }
         }
         
-        /**
-        * unset offset in token array (interface: ArrayAccess)
-        * @param int $offset
-        */
         public function offsetUnset($offset)
         {
             if (!isset($this->tokens[$offset])) {
